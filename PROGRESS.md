@@ -6,8 +6,8 @@
 
 ### Checklist
 - [x] 项目骨架 + docker-compose + git init
-- [ ] API：NestJS 初始化（健康检查 / swagger）
-- [ ] Admin：Next.js + Ant Design Pro 初始化（登录页/布局）
+- [x] API：NestJS 初始化（健康检查 / swagger）
+- [x] Admin：Next.js + Ant Design Pro 初始化（登录页/布局）
 - [ ] Auth：JWT 登录 + RBAC（Admin/Agent_Normal/Agent_Credit/Finance）
 - [ ] DB：Postgres + migration 工具落地
 - [ ] Ledger：accounts + ledger_entries（余额由账本汇总）
