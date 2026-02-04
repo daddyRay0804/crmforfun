@@ -1,0 +1,8 @@
+{
+  "name": "bet-crm-demo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
