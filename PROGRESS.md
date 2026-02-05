@@ -16,7 +16,7 @@
 ### M1 — 代理/用户管理
 - [ ] agents（两类）+ users + 归属关系
   - [x] API：users 创建 + 绑定 agent
-  - [ ] Admin UI：创建用户/绑定关系
+  - [x] Admin UI：创建用户/绑定关系（/users）
 - [ ] 代理视角列表/详情
 
 ### M2 — 充值（代理后台）+ ATP 下单

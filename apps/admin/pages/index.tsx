@@ -10,6 +10,9 @@ export default function Home() {
         <li>
           <Link href="/agents">Agents</Link>
         </li>
+        <li>
+          <Link href="/users">Users</Link>
+        </li>
       </ul>
     </main>
   );
