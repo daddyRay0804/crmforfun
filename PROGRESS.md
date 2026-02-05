@@ -10,7 +10,7 @@
 - [x] Admin：Next.js + Ant Design Pro 初始化（登录页/布局）
 - [x] Auth：JWT 登录 + RBAC（Admin/Agent_Normal/Agent_Credit/Finance）
 - [x] DB：Postgres + migration 工具落地（node-pg-migrate + init migration）
-- [ ] Ledger：accounts + ledger_entries（余额由账本汇总）
+- [x] Ledger：accounts + ledger_entries（余额由账本汇总）
 
 ## 后续里程碑
 ### M1 — 代理/用户管理
