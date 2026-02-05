@@ -26,7 +26,7 @@
 - [x] 入账到 ledger（Paid -> ledger_entries + deposit_orders.Credited）
 
 ### M3 — 授信模式
-- [ ] credit_limit（人工填写第一次费用）
+- [x] credit_limit（人工填写第一次费用）
 - [ ] 第二次额度申请（审批流）
 
 ### M4 — 提现（人工审核）
