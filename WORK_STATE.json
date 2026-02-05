@@ -1,0 +1,45 @@
+{
+  "project": "bet-crm-demo",
+  "timezone": "Pacific/Auckland",
+  "milestone": {
+    "current": "M2",
+    "status": "not_started",
+    "ownerSummary": "M1 agents/users 管理已完成；下一步进入 M2：充值订单 + ATP 占位 + 回调/幂等 + 入账 ledger"
+  },
+  "stateMachine": {
+    "stage": "plan",
+    "next": "implement"
+  },
+  "m1": {
+    "done": true,
+    "notes": [
+      "API: /agents GET/POST, /users GET/POST, /users/:id/agent PATCH",
+      "Admin: /agents + /users 页面可用（token 存 localStorage）"
+    ]
+  },
+  "m2": {
+    "todo": [
+      "设计 deposit_orders 表（status/state + amount + currency + user/agent + ref）",
+      "API: POST /deposit-orders（创建） + GET /deposit-orders（列表/过滤）",
+      "ATP: fetchQrcode 占位（不提交任何密钥），返回 mock data",
+      "notify 回调占位（验签/幂等骨架）",
+      "ledger 入账：deposit success -> ledger_entries append"
+    ],
+    "done": []
+  },
+  "verification": {
+    "required": [
+      "docker compose up -d",
+      "migrate:up",
+      "npm -w apps/api run build",
+      "npm -w apps/admin run build",
+      "UI smoke: login -> create agent -> create user -> bind agent"
+    ],
+    "lastRun": null,
+    "lastResult": null
+  },
+  "risks": [
+    "当前缺少 seed 脚本；本地测试需要手动插入 admin 用户或后续补 seed"
+  ],
+  "lastUpdated": "2026-02-05"
+}
