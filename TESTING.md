@@ -11,6 +11,9 @@
 在仓库根目录：
 
 ```bash
+# 如果 3000 端口冲突，可以临时换 admin 映射端口
+# 例如：ADMIN_PORT=3002 docker compose up -d
+
 docker compose up -d
 ```
 
