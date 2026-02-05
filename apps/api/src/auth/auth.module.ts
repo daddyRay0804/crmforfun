@@ -6,9 +6,11 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersService } from '../users/users.service';
 import { RolesGuard } from './roles.guard';
+import { DatabaseModule } from '../db/database.module';
 
 @Module({
   imports: [
+    DatabaseModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'dev_jwt_secret_change_me',
