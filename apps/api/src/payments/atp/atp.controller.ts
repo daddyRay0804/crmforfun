@@ -1,12 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AtpClient } from './atp.client';
-
-class FetchQrcodeDto {
-  outTradeNo!: string;
-  amount!: number;
-  currency?: string;
-  subject?: string;
-}
+import { FetchQrcodeDto } from './dto/fetch-qrcode.dto';
 
 @Controller('payments/atp')
 export class AtpController {
@@ -23,6 +17,7 @@ export class AtpController {
       amount: body.amount,
       currency: body.currency,
       subject: body.subject,
+      notifyUrl: body.notifyUrl,
     });
     return { data: res };
   }
