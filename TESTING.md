@@ -56,29 +56,17 @@ npm -w apps/admin run dev
 
 ## 4. Smoke 流程（推荐）
 
-### 4.1 创建初始 Admin 用户（只做一次）
+### 4.1 创建初始 Admin 用户（建议：用 seed 脚本）
 
-目前项目没有 seed 脚本。
-你可以用 psql 手动插入一个 admin 用户（示例仅用于本地 dev）。
-
-1) 进入 psql：
 ```bash
-docker compose exec db psql -U crm -d crm
+export DATABASE_URL="postgres://crm:crm@localhost:5432/crm"
+export ADMIN_EMAIL="admin@example.com"
+export ADMIN_PASSWORD="admin123"
+
+npm -w apps/api run seed:admin
 ```
 
-2) 生成 hash（用 pgcrypto 的 crypt）：
-```sql
--- 注意：把 admin@example.com / admin123 换成你要的
-INSERT INTO users (email, password_hash, role)
-VALUES (
-  'admin@example.com',
-  crypt('admin123', gen_salt('bf')),
-  'Admin'
-)
-ON CONFLICT (email) DO NOTHING;
-```
-
-> 说明：这不会被 commit 到 git，只是你本机的 DB 数据。
+> 说明：只写入你本机 DB，不会提交任何密钥。重复执行是幂等的。
 
 ### 4.2 Admin UI 操作
 
