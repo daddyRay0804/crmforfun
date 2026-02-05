@@ -1,33 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { Pool } from 'pg';
+import { PG_POOL } from '../db/database.module';
 import type { AgentRecord, AgentType } from './agents.types';
 
 @Injectable()
 export class AgentsService {
-  private readonly agents: AgentRecord[];
+  constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
 
-  constructor() {
-    // Demo-only in-memory store. DB will back this in later milestones.
-    this.agents = [
-      {
-        id: 'a_demo_normal',
-        type: 'Normal',
-        name: 'Demo Normal Agent',
-      },
-    ];
+  async list(): Promise<AgentRecord[]> {
+    const res = await this.pool.query<AgentRecord>(
+      'select id::text as id, type, name from agents order by created_at desc limit 200',
+    );
+    return res.rows;
   }
 
-  list(): AgentRecord[] {
-    return this.agents;
-  }
+  async create(input: { name: string; type?: AgentType }): Promise<AgentRecord> {
+    const name = input.name?.trim();
+    if (!name) throw new Error('name is required');
 
-  create(input: { name: string; type?: AgentType }): AgentRecord {
-    const agent: AgentRecord = {
-      id: `a_${Date.now()}`,
-      name: input.name,
-      type: input.type ?? 'Normal',
-    };
-
-    this.agents.push(agent);
-    return agent;
+    const res = await this.pool.query<AgentRecord>(
+      'insert into agents (name, type) values ($1, $2) returning id::text as id, type, name',
+      [name, input.type ?? 'Normal'],
+    );
+    return res.rows[0]!;
   }
 }
