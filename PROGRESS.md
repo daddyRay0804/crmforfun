@@ -14,7 +14,7 @@
 
 ## 后续里程碑
 ### M1 — 代理/用户管理
-- [ ] agents（两类）+ users + 归属关系
+- [x] agents（两类）+ users + 归属关系
   - [x] API：users 创建 + 绑定 agent
   - [x] Admin UI：创建用户/绑定关系（/users）
 - [ ] 代理视角列表/详情
