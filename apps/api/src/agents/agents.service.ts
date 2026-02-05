@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool } from 'pg';
 import { PG_POOL } from '../db/database.module';
-import type { AgentRecord, AgentType } from './agents.types';
+import type { AgentRecord, AgentType, AgentUserRecord } from './agents.types';
 
 @Injectable()
 export class AgentsService {
@@ -23,5 +23,21 @@ export class AgentsService {
       [name, input.type ?? 'Normal'],
     );
     return res.rows[0]!;
+  }
+
+  async getById(id: string): Promise<AgentRecord | null> {
+    const res = await this.pool.query<AgentRecord>(
+      'select id::text as id, type, name from agents where id = $1',
+      [id],
+    );
+    return res.rows[0] ?? null;
+  }
+
+  async listUsers(agentId: string): Promise<AgentUserRecord[]> {
+    const res = await this.pool.query<AgentUserRecord>(
+      'select id::text as id, email, role from users where agent_id = $1 order by created_at desc limit 200',
+      [agentId],
+    );
+    return res.rows;
   }
 }

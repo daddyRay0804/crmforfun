@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -25,5 +25,22 @@ export class AgentsController {
   @Roles('Admin')
   async create(@Body() body: CreateAgentDto) {
     return { data: await this.agents.create(body) };
+  }
+
+  @Get(':id')
+  @Roles('Admin', 'Finance')
+  async getOne(@Param('id') id: string) {
+    const found = await this.agents.getById(id);
+    if (!found) throw new NotFoundException('agent not found');
+    return { data: found };
+  }
+
+  @Get(':id/users')
+  @Roles('Admin', 'Finance')
+  async listUsers(@Param('id') id: string) {
+    // ensure agent exists (gives nicer error than empty list)
+    const found = await this.agents.getById(id);
+    if (!found) throw new NotFoundException('agent not found');
+    return { data: await this.agents.listUsers(id) };
   }
 }

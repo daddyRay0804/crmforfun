@@ -5,3 +5,9 @@ export type AgentRecord = {
   type: AgentType;
   name: string;
 };
+
+export type AgentUserRecord = {
+  id: string;
+  email: string;
+  role: string;
+};

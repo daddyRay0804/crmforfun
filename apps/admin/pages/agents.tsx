@@ -168,7 +168,9 @@ export default function AgentsPage() {
             {items.map((a) => (
               <tr key={a.id}>
                 <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>
-                  <code>{a.id}</code>
+                  <Link href={`/agents/${a.id}`}>
+                    <code>{a.id}</code>
+                  </Link>
                 </td>
                 <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>{a.type}</td>
                 <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>{a.name}</td>
