@@ -59,6 +59,25 @@ export class AtpClient {
     return crypto.createHmac('sha256', secret).update(msg).digest('hex');
   }
 
+  verifyNotify(payload: Record<string, unknown>): { ok: boolean; reason?: string; verified?: boolean } {
+    const secret = this.orderSecret() ?? mustGetEnv('ATP_NOTIFY_SECRET');
+    const provided = (payload.sign ?? payload.signature) as string | undefined;
+
+    // If secret is not configured, we can't verify. For demo we accept but mark unverified.
+    if (!secret) return { ok: true, verified: false, reason: 'ATP notify secret not configured' };
+
+    if (!provided) return { ok: false, reason: 'Missing signature' };
+
+    const toSign: Record<string, unknown> = { ...payload };
+    delete (toSign as any).sign;
+    delete (toSign as any).signature;
+
+    const expected = this.sign(toSign, secret);
+    if (String(provided) !== String(expected)) return { ok: false, reason: 'Bad signature' };
+
+    return { ok: true, verified: true };
+  }
+
   async fetchQrcode(input: AtpFetchQrcodeInput): Promise<AtpFetchQrcodeResult> {
     const merchantId = this.merchantId();
     const orderSecret = this.orderSecret();

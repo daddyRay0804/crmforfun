@@ -11,6 +11,15 @@ type DepositOrderRow = {
   created_at: string;
 };
 
+type MarkPaidFromAtpNotifyInput = {
+  outTradeNo: string;
+  tradeNo?: string;
+  status?: string;
+  amount?: number;
+  currency?: string;
+  verified: boolean;
+};
+
 @Injectable()
 export class DepositOrdersService {
   constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
@@ -52,6 +61,44 @@ export class DepositOrdersService {
       status: row.status,
       createdAt: row.created_at,
     };
+  }
+
+  async markPaidFromAtpNotify(input: MarkPaidFromAtpNotifyInput): Promise<{
+    depositOrderId?: string;
+    updated?: boolean;
+    alreadyProcessed?: boolean;
+  }> {
+    const key = String(input.outTradeNo ?? '').trim();
+    if (!key) throw new BadRequestException('Missing outTradeNo');
+
+    // Try to update only when not already paid/credited.
+    const upd = await this.pool.query<{ id: string; status: string }>(
+      "update deposit_orders set status = 'Paid', atp_order_id = coalesce(atp_order_id, $2), updated_at = now() where (id::text = $1 or atp_order_id = $1) and status in ('Created','AwaitingPayment') returning id::text as id, status::text as status",
+      [key, input.tradeNo ?? null],
+    );
+
+    if (upd.rowCount && upd.rows[0]) {
+      return { depositOrderId: upd.rows[0].id, updated: true };
+    }
+
+    // Idempotency: if already paid/credited, we ACK.
+    const existing = await this.pool.query<{ id: string; status: string }>(
+      'select id::text as id, status::text as status from deposit_orders where id::text = $1 or atp_order_id = $1 limit 1',
+      [key],
+    );
+
+    const row = existing.rows[0];
+    if (!row) {
+      // Do not leak too much detail to external callback; still 200.
+      return { updated: false };
+    }
+
+    if (row.status === 'Paid' || row.status === 'Credited') {
+      return { depositOrderId: row.id, alreadyProcessed: true };
+    }
+
+    // For other statuses (Failed/Cancelled/etc), do nothing but ACK.
+    return { depositOrderId: row.id, updated: false };
   }
 
   async listForUser(userId: string, role?: string) {

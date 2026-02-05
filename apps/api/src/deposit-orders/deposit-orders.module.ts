@@ -7,5 +7,6 @@ import { DepositOrdersService } from './deposit-orders.service';
   imports: [DatabaseModule],
   controllers: [DepositOrdersController],
   providers: [DepositOrdersService],
+  exports: [DepositOrdersService],
 })
 export class DepositOrdersModule {}

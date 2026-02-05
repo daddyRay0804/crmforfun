@@ -22,7 +22,7 @@
 ### M2 — 充值（代理后台）+ ATP 下单
 - [x] deposit_orders：创建/状态
 - [x] ATP fetchQrcode 封装（签名、请求、解析）
-- [ ] 回调 notify（验签 + 幂等）
+- [x] 回调 notify（验签 + 幂等）
 - [ ] 入账到 ledger
 
 ### M3 — 授信模式
