@@ -138,4 +138,109 @@ export class DepositOrdersService {
       createdAt: r.created_at,
     }));
   }
+
+  /**
+   * Credit a paid deposit order into ledger (idempotent).
+   * - creates (or reuses) the user's main account for that currency
+   * - appends a ledger_entries row with ref_type='deposit_order'
+   * - marks deposit_orders.status = 'Credited'
+   */
+  async creditPaidDepositOrder(depositOrderId: string): Promise<{
+    credited?: boolean;
+    alreadyCredited?: boolean;
+    skipped?: boolean;
+    reason?: string;
+  }> {
+    const id = String(depositOrderId ?? '').trim();
+    if (!id) throw new BadRequestException('Missing depositOrderId');
+
+    const client = await this.pool.connect();
+    try {
+      await client.query('begin');
+
+      const dep = await client.query<{
+        id: string;
+        status: string;
+        amount: string;
+        currency: string;
+        created_by_user_id: string | null;
+      }>(
+        "select id::text as id, status::text as status, amount::text as amount, currency, created_by_user_id::text as created_by_user_id from deposit_orders where id::text = $1 for update",
+        [id],
+      );
+
+      const row = dep.rows[0];
+      if (!row) {
+        await client.query('rollback');
+        return { skipped: true, reason: 'deposit order not found' };
+      }
+
+      if (row.status !== 'Paid' && row.status !== 'Credited') {
+        await client.query('rollback');
+        return { skipped: true, reason: `deposit order status is ${row.status}` };
+      }
+
+      const userId = row.created_by_user_id;
+      if (!userId) {
+        // For demo we only credit when we know the user account.
+        await client.query('rollback');
+        return { skipped: true, reason: 'deposit order has no created_by_user_id' };
+      }
+
+      const currency = String(row.currency ?? 'CNY').trim().toUpperCase();
+      const amount = Number(row.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        await client.query('rollback');
+        return { skipped: true, reason: 'invalid amount' };
+      }
+
+      // Ensure account exists (main).
+      await client.query(
+        "insert into accounts (owner_user_id, currency, name) values ($1, $2, 'main') on conflict (owner_user_id, currency, name) do nothing",
+        [userId, currency],
+      );
+
+      const acct = await client.query<{ id: string }>(
+        "select id::text as id from accounts where owner_user_id::text = $1 and currency = $2 and name = 'main' limit 1",
+        [userId, currency],
+      );
+      const accountId = acct.rows[0]?.id;
+      if (!accountId) {
+        await client.query('rollback');
+        return { skipped: true, reason: 'failed to resolve account' };
+      }
+
+      // Idempotency guard: only one ledger entry per deposit order.
+      const existing = await client.query<{ id: string }>(
+        "select id::text as id from ledger_entries where ref_type = 'deposit_order' and ref_id = $1 and entry_type = 'Deposit' limit 1",
+        [id],
+      );
+
+      if (existing.rows[0]?.id) {
+        // Ensure order is marked credited.
+        await client.query("update deposit_orders set status='Credited', updated_at=now() where id::text = $1", [id]);
+        await client.query('commit');
+        return { alreadyCredited: true };
+      }
+
+      await client.query(
+        "insert into ledger_entries (account_id, amount, entry_type, ref_type, ref_id, memo) values ($1, $2, 'Deposit', 'deposit_order', $3, $4)",
+        [accountId, amount, id, `deposit credited: ${id}`],
+      );
+
+      await client.query("update deposit_orders set status='Credited', updated_at=now() where id::text = $1", [id]);
+
+      await client.query('commit');
+      return { credited: true };
+    } catch (e) {
+      try {
+        await client.query('rollback');
+      } catch {
+        // ignore
+      }
+      throw e;
+    } finally {
+      client.release();
+    }
+  }
 }

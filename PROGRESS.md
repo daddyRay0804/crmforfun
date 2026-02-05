@@ -23,7 +23,7 @@
 - [x] deposit_orders：创建/状态
 - [x] ATP fetchQrcode 封装（签名、请求、解析）
 - [x] 回调 notify（验签 + 幂等）
-- [ ] 入账到 ledger
+- [x] 入账到 ledger（Paid -> ledger_entries + deposit_orders.Credited）
 
 ### M3 — 授信模式
 - [ ] credit_limit（人工填写第一次费用）

@@ -48,7 +48,12 @@ export class AtpController {
       verified: v.verified ?? false,
     });
 
+    // If we know which deposit order was paid, try to credit into ledger (idempotent).
+    const credit = result.depositOrderId
+      ? await this.deposits.creditPaidDepositOrder(result.depositOrderId)
+      : undefined;
+
     // Most vendors accept any 200 as ACK.
-    return { ok: true, ...result };
+    return { ok: true, ...result, credit };
   }
 }
