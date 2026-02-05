@@ -20,7 +20,7 @@
 - [x] 代理视角列表/详情
 
 ### M2 — 充值（代理后台）+ ATP 下单
-- [ ] deposit_orders：创建/状态
+- [x] deposit_orders：创建/状态
 - [ ] ATP fetchQrcode 封装（签名、请求、解析）
 - [ ] 回调 notify（验签 + 幂等）
 - [ ] 入账到 ledger
