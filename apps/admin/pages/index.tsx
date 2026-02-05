@@ -13,6 +13,9 @@ export default function Home() {
         <li>
           <Link href="/users">Users</Link>
         </li>
+        <li>
+          <Link href="/withdrawals">Withdrawals</Link>
+        </li>
       </ul>
     </main>
   );

@@ -7,6 +7,7 @@ import { CreditLimitRequestsModule } from './credit-limit-requests/credit-limit-
 import { DepositOrdersModule } from './deposit-orders/deposit-orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { UsersAdminModule } from './users/users-admin.module';
+import { WithdrawalRequestsModule } from './withdrawal-requests/withdrawal-requests.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UsersAdminModule } from './users/users-admin.module';
     CreditLimitRequestsModule,
     DepositOrdersModule,
     PaymentsModule,
+    WithdrawalRequestsModule,
   ],
   controllers: [AppController],
 })
