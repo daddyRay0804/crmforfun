@@ -8,6 +8,7 @@ function getApiBase() {
 type Stats = {
   ok: boolean;
   now: string;
+  range?: { from: string | null; to: string | null };
   deposits?: {
     totalAmountCredited: number;
     countCredited: number;
@@ -28,7 +29,13 @@ type Stats = {
 
 export default function Home() {
   const apiBase = useMemo(() => getApiBase(), []);
+
   const [token, setToken] = useState<string>('');
+  const [tz, setTz] = useState<string>('');
+
+  const [rangeKey, setRangeKey] = useState<'today' | 'week' | 'month' | 'all'>('today');
+  const [range, setRange] = useState<{ from?: string; to?: string }>({});
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [agentsTop, setAgentsTop] = useState<any[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,19 +43,55 @@ export default function Home() {
   useEffect(() => {
     const saved = window.localStorage.getItem('bet_crm_demo_token');
     if (saved) setToken(saved);
+    setTz(Intl.DateTimeFormat().resolvedOptions().timeZone || '');
   }, []);
 
-  async function load() {
+  function calcRange(key: 'today' | 'week' | 'month' | 'all') {
+    if (key === 'all') return {} as { from?: string; to?: string };
+
+    const now = new Date();
+    const start = new Date(now);
+    const end = new Date(now);
+
+    if (key === 'today') {
+      start.setHours(0, 0, 0, 0);
+      end.setHours(24, 0, 0, 0);
+    }
+
+    if (key === 'week') {
+      // Monday as start of week
+      const day = (now.getDay() + 6) % 7;
+      start.setDate(now.getDate() - day);
+      start.setHours(0, 0, 0, 0);
+      end.setTime(start.getTime());
+      end.setDate(start.getDate() + 7);
+    }
+
+    if (key === 'month') {
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      end.setMonth(start.getMonth() + 1);
+      end.setDate(1);
+      end.setHours(0, 0, 0, 0);
+    }
+
+    // NOTE: this is local-time boundary converted to UTC ISO.
+    return { from: start.toISOString(), to: end.toISOString() };
+  }
+
+  async function load(r?: { from?: string; to?: string }) {
     setError(null);
     try {
-      const res = await fetch(`${apiBase}/stats/summary`, {
+      const qs = r?.from || r?.to ? `?from=${encodeURIComponent(r?.from ?? '')}&to=${encodeURIComponent(r?.to ?? '')}` : '';
+
+      const res = await fetch(`${apiBase}/stats/summary-range${qs}`, {
         headers: token ? { authorization: `Bearer ${token}` } : undefined,
       });
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.message ?? `stats failed: ${res.status}`);
       setStats(json);
-      // load top agents
-      const res2 = await fetch(`${apiBase}/stats/agents-top`, {
+
+      const res2 = await fetch(`${apiBase}/stats/agents-top${qs}`, {
         headers: token ? { authorization: `Bearer ${token}` } : undefined,
       });
       const json2 = (await res2.json()) as any;
@@ -58,8 +101,15 @@ export default function Home() {
     }
   }
 
+  async function loadFor(key: 'today' | 'week' | 'month' | 'all') {
+    setRangeKey(key);
+    const r = calcRange(key);
+    setRange(r);
+    await load(r);
+  }
+
   useEffect(() => {
-    if (token) load();
+    if (token) loadFor(rangeKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -68,7 +118,7 @@ export default function Home() {
       title="Dashboard"
       right={
         <button
-          onClick={load}
+          onClick={() => load(range)}
           style={{
             background: 'var(--card)',
             border: '1px solid var(--border)',
@@ -81,6 +131,32 @@ export default function Home() {
         </button>
       }
     >
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontWeight: 600 }}>Time zone</div>
+            <div style={{ color: 'var(--muted)', marginTop: 4 }}>{tz || '—'}（browser）</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <RangeBtn active={rangeKey === 'today'} onClick={() => loadFor('today')}>
+              Today
+            </RangeBtn>
+            <RangeBtn active={rangeKey === 'week'} onClick={() => loadFor('week')}>
+              This week
+            </RangeBtn>
+            <RangeBtn active={rangeKey === 'month'} onClick={() => loadFor('month')}>
+              This month
+            </RangeBtn>
+            <RangeBtn active={rangeKey === 'all'} onClick={() => loadFor('all')}>
+              All
+            </RangeBtn>
+          </div>
+        </div>
+        <div style={{ marginTop: 10, color: 'var(--muted)', fontSize: 12 }}>
+          Range (UTC ISO): from={range.from ?? '—'} to={range.to ?? '—'}
+        </div>
+      </Card>
+
       {!token ? (
         <Card>
           <div style={{ fontWeight: 600 }}>未登录</div>
@@ -104,12 +180,10 @@ export default function Home() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16, marginTop: 16 }}>
-        <StatCard title="待处理充值单" value={fmtInt(stats?.deposits?.pendingCount)} hint="Created/Awaiting" />
-        <StatCard title="待处理提现单" value={fmtInt(stats?.withdrawals?.pendingCount)} hint="Requested/Frozen" />
+        <StatCard title="待处理充值单" value={fmtInt(stats?.deposits?.pendingCount)} hint="Created/Awaiting/Paid" />
+        <StatCard title="待处理提现单" value={fmtInt(stats?.withdrawals?.pendingCount)} hint="Requested/Frozen/Approved" />
         <StatCard title="时间" value={stats?.now ? new Date(stats.now).toLocaleString() : '—'} hint="server" />
       </div>
-
-
 
       <Card style={{ marginTop: 16 }}>
         <div style={{ fontWeight: 600, marginBottom: 10 }}>Top Agents（净流入，粗算）</div>
@@ -146,9 +220,8 @@ export default function Home() {
       <Card style={{ marginTop: 16 }}>
         <div style={{ fontWeight: 600 }}>客损 / 盈利（下一步）</div>
         <div style={{ color: 'var(--muted)', marginTop: 6, lineHeight: 1.6 }}>
-          我先把「净流入 = 入账 - 出账」作为粗算面板。你说的“客损/盈利”一般需要明确规则（例如：
-          按用户维度的输赢、代理分成、手续费、冲正/退款、时间窗口等）。
-          你给我口径，我就把面板升级成真实 KPI。
+          目前先用「现金流口径」：净流入 = 入账(Credited) - 出账(Paid)。
+          真实“客损/盈利”（用户输赢、代理分成、返水/手续费）需要新增下注/结算数据表（下一阶段会补）。
         </div>
       </Card>
     </Layout>
@@ -169,6 +242,24 @@ function Card({ children, style }: { children: any; style?: any }) {
     >
       {children}
     </section>
+  );
+}
+
+function RangeBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: any }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '10px 12px',
+        borderRadius: 10,
+        border: active ? '1px solid rgba(0,122,255,0.35)' : '1px solid var(--border)',
+        background: active ? 'rgba(0,122,255,0.10)' : 'var(--card)',
+        cursor: 'pointer',
+        fontWeight: 600,
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
