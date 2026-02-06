@@ -30,6 +30,7 @@ export default function Home() {
   const apiBase = useMemo(() => getApiBase(), []);
   const [token, setToken] = useState<string>('');
   const [stats, setStats] = useState<Stats | null>(null);
+  const [agentsTop, setAgentsTop] = useState<any[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,6 +47,12 @@ export default function Home() {
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.message ?? `stats failed: ${res.status}`);
       setStats(json);
+      // load top agents
+      const res2 = await fetch(`${apiBase}/stats/agents-top`, {
+        headers: token ? { authorization: `Bearer ${token}` } : undefined,
+      });
+      const json2 = (await res2.json()) as any;
+      if (res2.ok) setAgentsTop(json2?.items ?? []);
     } catch (e: any) {
       setError(e?.message ?? String(e));
     }
@@ -101,6 +108,40 @@ export default function Home() {
         <StatCard title="待处理提现单" value={fmtInt(stats?.withdrawals?.pendingCount)} hint="Requested/Frozen" />
         <StatCard title="时间" value={stats?.now ? new Date(stats.now).toLocaleString() : '—'} hint="server" />
       </div>
+
+
+
+      <Card style={{ marginTop: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 10 }}>Top Agents（净流入，粗算）</div>
+        {!agentsTop ? (
+          <div style={{ color: 'var(--muted)' }}>—</div>
+        ) : agentsTop.length ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+            {agentsTop.slice(0, 10).map((a: any) => (
+              <div
+                key={a.agentId}
+                style={{
+                  border: '1px solid var(--border)',
+                  borderRadius: 12,
+                  padding: 12,
+                  background: 'rgba(0,0,0,0.015)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ fontWeight: 600 }}>{a.name}</div>
+                  <div style={{ color: 'var(--muted)', fontSize: 12 }}>{a.type}</div>
+                </div>
+                <div style={{ marginTop: 6, fontSize: 18, fontWeight: 700 }}>{fmtMoney(a.net)}</div>
+                <div style={{ marginTop: 6, color: 'var(--muted)', fontSize: 12 }}>
+                  入账 {fmtMoney(a.creditedIn)} · 出账 {fmtMoney(a.paidOut)} · 待处理 充{fmtInt(a.depositPending)}/提{fmtInt(a.withdrawPending)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ color: 'var(--muted)' }}>(no data)</div>
+        )}
+      </Card>
 
       <Card style={{ marginTop: 16 }}>
         <div style={{ fontWeight: 600 }}>客损 / 盈利（下一步）</div>
