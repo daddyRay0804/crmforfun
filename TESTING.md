@@ -13,6 +13,9 @@
 ```bash
 # 如果 3000 端口冲突，可以临时换 admin 映射端口
 # 例如：ADMIN_PORT=3002 docker compose up -d
+#
+# 建议同时传 UID/GID，避免容器以 root 写入 .next/node_modules 导致本地出现 EACCES
+# 例如：UID=$(id -u) GID=$(id -g) ADMIN_PORT=3002 docker compose up -d
 
 docker compose up -d
 ```
