@@ -8,6 +8,7 @@ import { DepositOrdersModule } from './deposit-orders/deposit-orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { UsersAdminModule } from './users/users-admin.module';
 import { WithdrawalRequestsModule } from './withdrawal-requests/withdrawal-requests.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { WithdrawalRequestsModule } from './withdrawal-requests/withdrawal-reque
     DepositOrdersModule,
     PaymentsModule,
     WithdrawalRequestsModule,
+    StatsModule,
   ],
   controllers: [AppController],
 })
