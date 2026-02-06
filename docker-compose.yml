@@ -14,7 +14,8 @@ services:
     image: node:22
     working_dir: /app
     # Run as host user to avoid root-owned build artifacts on bind mounts
-    user: "${UID:-1000}:${GID:-1000}"
+    # NOTE: bash has a readonly $UID var, so we use HOST_UID/HOST_GID.
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     volumes:
       - ./:/app
     command: bash -lc "npm -w apps/api run dev"
@@ -31,7 +32,8 @@ services:
     image: node:22
     working_dir: /app
     # Run as host user to avoid root-owned build artifacts on bind mounts
-    user: "${UID:-1000}:${GID:-1000}"
+    # NOTE: bash has a readonly $UID var, so we use HOST_UID/HOST_GID.
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     volumes:
       - ./:/app
     command: bash -lc "npm -w apps/admin run dev"
