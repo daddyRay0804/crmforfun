@@ -29,4 +29,5 @@ WORKDIR /app/apps/api
 EXPOSE 3001
 
 # Run DB migrations on startup (idempotent), then start API.
-CMD ["bash", "-lc", "npm -w apps/api run migrate:up && node dist/main.js"]
+# NOTE: runtime WORKDIR is apps/api, so we should NOT use npm workspace flags here.
+CMD ["bash", "-lc", "npm run migrate:up && node dist/main.js"]
