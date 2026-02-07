@@ -5,44 +5,40 @@ services:
       POSTGRES_USER: crm
       POSTGRES_PASSWORD: crm
       POSTGRES_DB: crm
-    ports:
-      - "5432:5432"
+    # Production: do not expose DB port to host by default
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
 
   api:
-    image: node:22
-    working_dir: /app
-    # Run as host user to avoid root-owned build artifacts on bind mounts
-    # NOTE: bash has a readonly $UID var, so we use HOST_UID/HOST_GID.
-    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    volumes:
-      - ./:/app
-    command: bash -lc "npm -w apps/api run dev"
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     environment:
       DATABASE_URL: postgresql://crm:crm@db:5432/crm
       PORT: 3001
       JWT_SECRET: dev_secret_change_me
+      NODE_ENV: production
     depends_on:
       - db
     ports:
-      - "3001:3001"
+      - "${API_PORT:-3001}:3001"
+    restart: unless-stopped
 
   admin:
-    image: node:22
-    working_dir: /app
-    # Run as host user to avoid root-owned build artifacts on bind mounts
-    # NOTE: bash has a readonly $UID var, so we use HOST_UID/HOST_GID.
-    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    volumes:
-      - ./:/app
-    command: bash -lc "npm -w apps/admin run dev"
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
     environment:
+      # NOTE: this value is baked into the browser bundle usage (NEXT_PUBLIC_*).
+      # For single-host deployment, keeping localhost works for the end-user browser.
       NEXT_PUBLIC_API_BASE: http://localhost:3001
+      NODE_ENV: production
     depends_on:
       - api
     ports:
       - "${ADMIN_PORT:-3000}:3000"
+    restart: unless-stopped
 
 volumes:
   pgdata:

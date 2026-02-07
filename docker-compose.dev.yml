@@ -1,0 +1,45 @@
+# Dev compose (bind-mount + dev servers). Keep for local development.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: crm
+      POSTGRES_DB: crm
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    image: node:22
+    working_dir: /app
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./:/app
+    command: bash -lc "npm -w apps/api run dev"
+    environment:
+      DATABASE_URL: postgresql://crm:crm@db:5432/crm
+      PORT: 3001
+      JWT_SECRET: dev_secret_change_me
+    depends_on:
+      - db
+    ports:
+      - "3001:3001"
+
+  admin:
+    image: node:22
+    working_dir: /app
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./:/app
+    command: bash -lc "npm -w apps/admin run dev"
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:3001
+    depends_on:
+      - api
+    ports:
+      - "${ADMIN_PORT:-3000}:3000"
+
+volumes:
+  pgdata:
