@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { toast } from '../components/Toast';
 import { apiLogin, setToken } from '../lib/auth';
 import { getApiBase } from '../lib/api';
 
@@ -21,7 +22,9 @@ export default function LoginPage() {
       setToken(access_token);
       router.replace('/');
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      toast.error(msg, '登录失败');
     } finally {
       setLoading(false);
     }
