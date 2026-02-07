@@ -19,7 +19,7 @@ type UserRecord = {
 };
 
 function getApiBase() {
-  return process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 }
 
 export default function UsersPage() {

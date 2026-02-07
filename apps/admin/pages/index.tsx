@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Layout } from './_layout';
 
 function getApiBase() {
-  return process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
+  // Use same-origin proxy (next.config.js rewrites /api -> http://api:3001)
+  return process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 }
 
 type Stats = {

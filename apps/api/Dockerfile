@@ -27,4 +27,6 @@ COPY --from=build /app/apps/api ./apps/api
 
 WORKDIR /app/apps/api
 EXPOSE 3001
-CMD ["node", "dist/main.js"]
+
+# Run DB migrations on startup (idempotent), then start API.
+CMD ["bash", "-lc", "npm -w apps/api run migrate:up && node dist/main.js"]

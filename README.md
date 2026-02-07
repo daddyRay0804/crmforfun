@@ -12,6 +12,12 @@ Demo CRM (two-level: platform → agent → user) with two agent modes:
 docker compose up -d --build
 ```
 
+首次部署或升级后，建议执行一次初始化数据（创建测试账号/测试数据）：
+
+```bash
+docker compose exec api npm -w apps/api run seed:demo
+```
+
 - Admin UI: http://<server-ip>:${ADMIN_PORT:-3000}
 - API: http://<server-ip>:${API_PORT:-3001}
 - Postgres: （默认不对外暴露端口，仅容器内访问）

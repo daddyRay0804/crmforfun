@@ -27,20 +27,20 @@ export function Layout({ title, children, right }: Props) {
         }}
       >
         <div style={{ padding: 8, marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, letterSpacing: -0.2 }}>bet-crm</div>
-          <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 4 }}>Admin Console</div>
+          <div style={{ fontWeight: 700, letterSpacing: -0.2 }}>CRM 后台</div>
+          <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 4 }}>管理控制台</div>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <NavItem href="/">Dashboard</NavItem>
-          <NavItem href="/agents">Agents</NavItem>
-          <NavItem href="/users">Users</NavItem>
-          <NavItem href="/withdrawals">Withdrawals</NavItem>
+          <NavItem href="/">仪表盘</NavItem>
+          <NavItem href="/agents">代理管理</NavItem>
+          <NavItem href="/users">用户管理</NavItem>
+          <NavItem href="/withdrawals">提现审核</NavItem>
         </nav>
 
         <div style={{ marginTop: 16, padding: 8, fontSize: 12, color: 'var(--muted)' }}>
-          <div>Tip:</div>
-          <div>Use Admin/Finance role to see full stats.</div>
+          <div>提示：</div>
+          <div>使用 Admin / Finance 角色登录可查看完整数据与审核权限。</div>
         </div>
       </aside>
 
@@ -48,7 +48,7 @@ export function Layout({ title, children, right }: Props) {
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: -0.4 }}>{title}</div>
-            <div style={{ marginTop: 6, color: 'var(--muted)', fontSize: 13 }}>Clean, minimal, Apple-ish.</div>
+            <div style={{ marginTop: 6, color: 'var(--muted)', fontSize: 13 }}>用于代理/用户/订单/提现的日常运营管理。</div>
           </div>
           <div>{right}</div>
         </header>
