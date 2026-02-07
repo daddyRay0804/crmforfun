@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
+import { Tag } from '../components/Tag';
 import { TopRightUser } from '../components/TopRightUser';
 import { getApiBase } from '../lib/api';
+import { withdrawalStatusColor, withdrawalStatusLabel } from '../lib/status';
 import { Layout } from './_layout';
 
 type WithdrawalRecord = {
@@ -16,17 +18,6 @@ type WithdrawalRecord = {
   createdAt: string;
   updatedAt: string;
 };
-
-function statusLabel(s: WithdrawalRecord['status']) {
-  const m: Record<string, string> = {
-    Requested: '已申请',
-    Frozen: '已冻结',
-    Approved: '已通过',
-    Rejected: '已拒绝',
-    Paid: '已打款',
-  };
-  return m[s] ?? s;
-}
 
 export default function WithdrawalsPage() {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -163,7 +154,9 @@ export default function WithdrawalsPage() {
                     </td>
                     <td style={{ padding: '8px 6px', borderBottom: '1px solid #f3f3f3' }}>{it.amount}</td>
                     <td style={{ padding: '8px 6px', borderBottom: '1px solid #f3f3f3' }}>{it.currency}</td>
-                    <td style={{ padding: '8px 6px', borderBottom: '1px solid #f3f3f3' }}>{statusLabel(it.status)}</td>
+                    <td style={{ padding: '8px 6px', borderBottom: '1px solid #f3f3f3' }}>
+                      <Tag color={withdrawalStatusColor(it.status)}>{withdrawalStatusLabel(it.status)}</Tag>
+                    </td>
                     <td style={{ padding: '8px 6px', borderBottom: '1px solid #f3f3f3' }}>
                       <code>{it.agentId.slice(0, 8)}...</code>
                     </td>
