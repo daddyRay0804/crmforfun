@@ -11,10 +11,20 @@ curl -fsS "${API_URL}/health" | cat
 
 echo
 echo "[2/4] login"
-TOKEN=$(curl -fsS -X POST "${API_URL}/auth/login" \
+LOGIN_RES=$(curl -sS -w "\nHTTP_STATUS:%{http_code}\n" -X POST "${API_URL}/auth/login" \
   -H 'content-type: application/json' \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\"}" | \
-  node -pe 'JSON.parse(fs.readFileSync(0,"utf8")).access_token')
+  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\"}")
+
+STATUS=$(echo "$LOGIN_RES" | sed -n 's/^HTTP_STATUS://p')
+BODY=$(echo "$LOGIN_RES" | sed '/^HTTP_STATUS:/d')
+
+if [[ "$STATUS" != "200" ]]; then
+  echo "login failed (HTTP $STATUS): $BODY" >&2
+  echo "Hint: run seed -> docker compose exec api npm run seed:demo" >&2
+  exit 1
+fi
+
+TOKEN=$(echo "$BODY" | node -pe 'JSON.parse(fs.readFileSync(0,"utf8")).access_token')
 
 echo "token: ${TOKEN:0:16}..."
 
