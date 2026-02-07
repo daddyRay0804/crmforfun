@@ -23,8 +23,16 @@ echo "[3/4] me"
 curl -fsS "${API_URL}/auth/me" -H "authorization: Bearer ${TOKEN}" | cat
 
 echo
-echo "[4/4] list agents"
+echo "[4/6] list agents"
 curl -fsS "${API_URL}/agents" -H "authorization: Bearer ${TOKEN}" | cat
+
+echo
+echo "[5/6] list users"
+curl -fsS "${API_URL}/users" -H "authorization: Bearer ${TOKEN}" | cat
+
+echo
+echo "[6/6] list withdrawal-requests"
+curl -fsS "${API_URL}/withdrawal-requests" -H "authorization: Bearer ${TOKEN}" | cat
 
 echo
 echo "OK. Admin UI should be at: ${BASE_URL}"

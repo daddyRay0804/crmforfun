@@ -30,9 +30,8 @@ services:
       context: .
       dockerfile: apps/admin/Dockerfile
     environment:
-      # NOTE: this value is baked into the browser bundle usage (NEXT_PUBLIC_*).
-      # For single-host deployment, keeping localhost works for the end-user browser.
-      NEXT_PUBLIC_API_BASE: http://localhost:3001
+      # Use same-origin API proxy: browser calls /api/* on admin, then Next rewrites to http://api:3001
+      NEXT_PUBLIC_API_BASE: /api
       NODE_ENV: production
     depends_on:
       - api
