@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Layout } from './_layout';
-
-function getApiBase() {
-  // Use same-origin proxy (next.config.js rewrites /api -> http://api:3001)
-  return process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-}
+import { AuthGate } from '../components/AuthGate';
+import { getApiBase } from '../lib/api';
+import { TopRightUser } from '../components/TopRightUser';
 
 type Stats = {
   ok: boolean;
@@ -115,23 +113,12 @@ export default function Home() {
   }, [token]);
 
   return (
-    <Layout
-      title="Dashboard"
-      right={
-        <button
-          onClick={() => load(range)}
-          style={{
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
-            borderRadius: 10,
-            padding: '10px 12px',
-            cursor: 'pointer',
-          }}
+    <AuthGate>
+      {(me) => (
+        <Layout
+          title="仪表盘"
+          right={<TopRightUser email={me.email} role={me.role} />}
         >
-          Refresh
-        </button>
-      }
-    >
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div>
@@ -225,7 +212,9 @@ export default function Home() {
           真实“客损/盈利”（用户输赢、代理分成、返水/手续费）需要新增下注/结算数据表（下一阶段会补）。
         </div>
       </Card>
-    </Layout>
+        </Layout>
+      )}
+    </AuthGate>
   );
 }
 

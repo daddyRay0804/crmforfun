@@ -1,6 +1,10 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { AuthGate } from '../../components/AuthGate';
+import { TopRightUser } from '../../components/TopRightUser';
+import { getApiBase } from '../../lib/api';
+import { Layout } from '../_layout';
 
 type AgentType = 'Normal' | 'Credit';
 
@@ -16,8 +20,8 @@ type AgentUserRecord = {
   role: string;
 };
 
-function getApiBase() {
-  return process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
+function typeLabel(t: AgentType) {
+  return t === 'Credit' ? '授信模式' : '普通模式';
 }
 
 export default function AgentDetailPage() {
@@ -52,11 +56,11 @@ export default function AgentDetailPage() {
         }),
       ]);
 
-      if (!aRes.ok) throw new Error(`load agent failed: ${aRes.status}`);
-      if (!uRes.ok) throw new Error(`load agent users failed: ${uRes.status}`);
+      const aJson = await aRes.json().catch(() => ({}));
+      const uJson = await uRes.json().catch(() => ({}));
 
-      const aJson = (await aRes.json()) as { data: AgentRecord };
-      const uJson = (await uRes.json()) as { data: AgentUserRecord[] };
+      if (!aRes.ok) throw new Error(aJson?.message ?? `加载代理失败：${aRes.status}`);
+      if (!uRes.ok) throw new Error(uJson?.message ?? `加载代理下用户失败：${uRes.status}`);
 
       setAgent(aJson.data);
       setUsers(uJson.data ?? []);
@@ -73,78 +77,74 @@ export default function AgentDetailPage() {
   }, [id, token]);
 
   return (
-    <main style={{ fontFamily: 'system-ui', padding: 24, maxWidth: 960 }}>
-      <h1>Agent Detail</h1>
-      <p>
-        <Link href="/agents">← Agents</Link>
-      </p>
+    <AuthGate>
+      {(me) => (
+        <Layout title="代理详情" right={<TopRightUser email={me.email} role={me.role} />}>
+          <div style={{ marginBottom: 12 }}>
+            <Link href="/agents">← 返回代理列表</Link>
+          </div>
 
-      <p style={{ marginTop: 0, color: '#666' }}>
-        API: <code>{apiBase}</code>
-      </p>
-      <p style={{ marginTop: 0, color: '#666' }}>
-        Token: <code>{token ? `${token.slice(0, 12)}...` : '(none)'}</code>
-      </p>
+          <button onClick={load} disabled={loading || !id} style={{ padding: '8px 12px' }}>
+            刷新
+          </button>
 
-      <button onClick={load} disabled={loading || !id} style={{ padding: '8px 12px' }}>
-        Refresh
-      </button>
+          {error ? (
+            <p style={{ color: 'crimson' }}>
+              <strong>错误：</strong> {error}
+            </p>
+          ) : null}
 
-      {error ? (
-        <p style={{ color: 'crimson' }}>
-          <strong>Error:</strong> {error}
-        </p>
-      ) : null}
+          <section style={{ border: '1px solid #eee', padding: 16, borderRadius: 8, marginTop: 16 }}>
+            <h2 style={{ marginTop: 0 }}>基础信息</h2>
+            {agent ? (
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                <li>
+                  <strong>ID：</strong> <code>{agent.id}</code>
+                </li>
+                <li>
+                  <strong>类型：</strong> {typeLabel(agent.type)}
+                </li>
+                <li>
+                  <strong>名称：</strong> {agent.name}
+                </li>
+              </ul>
+            ) : (
+              <p style={{ margin: 0, color: '#666' }}>加载中…</p>
+            )}
+          </section>
 
-      <section style={{ border: '1px solid #eee', padding: 16, borderRadius: 8, marginTop: 16 }}>
-        <h2 style={{ marginTop: 0 }}>Info</h2>
-        {agent ? (
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            <li>
-              <strong>ID:</strong> <code>{agent.id}</code>
-            </li>
-            <li>
-              <strong>Type:</strong> {agent.type}
-            </li>
-            <li>
-              <strong>Name:</strong> {agent.name}
-            </li>
-          </ul>
-        ) : (
-          <p style={{ margin: 0, color: '#666' }}>(loading...)</p>
-        )}
-      </section>
-
-      <section style={{ marginTop: 16 }}>
-        <h2>Users under this agent</h2>
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: 8 }}>ID</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: 8 }}>Email</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: 8 }}>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>
-                  <code>{u.id}</code>
-                </td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>{u.email}</td>
-                <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>{u.role}</td>
-              </tr>
-            ))}
-            {!users.length ? (
-              <tr>
-                <td colSpan={3} style={{ padding: 8, color: '#666' }}>
-                  (no users)
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </section>
-    </main>
+          <section style={{ marginTop: 16 }}>
+            <h2>该代理下的用户</h2>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: 8 }}>ID</th>
+                  <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: 8 }}>邮箱</th>
+                  <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: 8 }}>角色</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>
+                      <code>{u.id}</code>
+                    </td>
+                    <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>{u.email}</td>
+                    <td style={{ borderBottom: '1px solid #f0f0f0', padding: 8 }}>{u.role}</td>
+                  </tr>
+                ))}
+                {!users.length ? (
+                  <tr>
+                    <td colSpan={3} style={{ padding: 8, color: '#666' }}>
+                      暂无用户
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </section>
+        </Layout>
+      )}
+    </AuthGate>
   );
 }
