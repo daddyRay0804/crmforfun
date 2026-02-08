@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
+import { toast } from '../components/Toast';
 import { TopRightUser } from '../components/TopRightUser';
 import { getApiBase } from '../lib/api';
 import { Layout } from './_layout';
@@ -44,7 +45,9 @@ export default function AgentsPage() {
       if (!res.ok) throw new Error(json?.message ?? `加载代理失败：${res.status}`);
       setItems(json.data ?? []);
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      toast.error(msg, '加载代理失败');
     } finally {
       setLoading(false);
     }
@@ -67,7 +70,9 @@ export default function AgentsPage() {
       setNewName('');
       await loadAgents();
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      toast.error(msg, '创建代理失败');
     } finally {
       setLoading(false);
     }
@@ -107,11 +112,8 @@ export default function AgentsPage() {
             </p>
           </section>
 
-          {error ? (
-            <p style={{ color: 'crimson' }}>
-              <strong>错误：</strong> {error}
-            </p>
-          ) : null}
+          {/* Error is shown as top-right toast; keep state for debugging only. */}
+          {error ? null : null}
 
           <section>
             <h2>代理列表</h2>

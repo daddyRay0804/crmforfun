@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AuthGate } from '../components/AuthGate';
 import { Tag } from '../components/Tag';
+import { toast } from '../components/Toast';
 import { TopRightUser } from '../components/TopRightUser';
 import { getApiBase } from '../lib/api';
 import { withdrawalStatusColor, withdrawalStatusLabel } from '../lib/status';
@@ -48,7 +49,9 @@ export default function WithdrawalsPage() {
       if (!res.ok) throw new Error(json?.message ?? `加载失败：${res.status}`);
       setItems(json.data ?? []);
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      toast.error(msg, '加载提现列表失败');
     } finally {
       setLoading(false);
     }
@@ -75,7 +78,9 @@ export default function WithdrawalsPage() {
       setMemo('');
       await load();
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      toast.error(msg, '创建提现失败');
     } finally {
       setLoading(false);
     }
@@ -97,7 +102,9 @@ export default function WithdrawalsPage() {
       if (!res.ok) throw new Error(json?.message ?? `${action} 失败：${res.status}`);
       await load();
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      toast.error(msg, '操作失败');
     } finally {
       setLoading(false);
     }
@@ -128,11 +135,8 @@ export default function WithdrawalsPage() {
             <p style={{ marginTop: 8, marginBottom: 0, color: '#666' }}>审核动作需要 Admin/Finance 权限。</p>
           </section>
 
-          {error ? (
-            <p style={{ color: 'crimson' }}>
-              <strong>错误：</strong> {error}
-            </p>
-          ) : null}
+          {/* Error is shown as top-right toast; keep state for debugging only. */}
+          {error ? null : null}
 
           <section style={{ border: '1px solid #eee', padding: 16, borderRadius: 8 }}>
             <h2 style={{ marginTop: 0 }}>提现列表</h2>
