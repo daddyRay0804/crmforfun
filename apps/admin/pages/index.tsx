@@ -40,7 +40,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('bet_crm_demo_token');
+    const saved = window.localStorage.getItem('crmforfun_token');
     if (saved) setToken(saved);
     setTz(Intl.DateTimeFormat().resolvedOptions().timeZone || '');
   }, []);

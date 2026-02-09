@@ -1,10 +1,11 @@
-# TESTING — bet-crm-demo
+# TESTING — crmforfun
 
 > 目标：给“人类可复制”的最小 smoke 流程，用于每次改 Auth/RBAC/DB 以后快速回归。
 
 ## 0. 前置
 - Node / npm 已安装
 - Docker 已安装
+- 若要在宿主机直接运行 `npm -w ...`（非 compose 内），先在仓库根目录执行一次：`npm ci`
 
 ## 1. 启动 Postgres
 

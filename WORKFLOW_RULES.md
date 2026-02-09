@@ -1,4 +1,4 @@
-# Workflow rules — bet-crm-demo
+# Workflow rules — crmforfun
 
 ## Goal
 Keep progress moving even if the agent is interrupted.

@@ -1,45 +1,20 @@
 {
-  "project": "bet-crm-demo",
-  "timezone": "Pacific/Auckland",
-  "milestone": {
-    "current": "M2",
-    "status": "not_started",
-    "ownerSummary": "M1 agents/users 管理已完成；下一步进入 M2：充值订单 + ATP 占位 + 回调/幂等 + 入账 ledger"
-  },
-  "stateMachine": {
-    "stage": "plan",
-    "next": "implement"
-  },
-  "m1": {
-    "done": true,
-    "notes": [
-      "API: /agents GET/POST, /users GET/POST, /users/:id/agent PATCH",
-      "Admin: /agents + /users 页面可用（token 存 localStorage）"
-    ]
-  },
-  "m2": {
-    "todo": [
-      "设计 deposit_orders 表（status/state + amount + currency + user/agent + ref）",
-      "API: POST /deposit-orders（创建） + GET /deposit-orders（列表/过滤）",
-      "ATP: fetchQrcode 占位（不提交任何密钥），返回 mock data",
-      "notify 回调占位（验签/幂等骨架）",
-      "ledger 入账：deposit success -> ledger_entries append"
-    ],
-    "done": []
-  },
-  "verification": {
-    "required": [
-      "docker compose up -d",
-      "migrate:up",
-      "npm -w apps/api run build",
-      "npm -w apps/admin run build",
-      "UI smoke: login -> create agent -> create user -> bind agent"
-    ],
-    "lastRun": null,
-    "lastResult": null
-  },
-  "risks": [
-    "当前缺少 seed 脚本；本地测试需要手动插入 admin 用户或后续补 seed"
+  "now": "对 crmforfun 做一次结构/逻辑梳理 + 自测后再优化（按 DEV_SKILL）",
+  "where": "已完成 docker compose 启动 + seed:demo + scripts/smoke-test.sh（使用 API_PORT=3011, ADMIN_PORT=3012）",
+  "next": [
+    "补齐 Phase 0：输出 crmforfun 的逻辑图包（PRODUCT_SPEC.md）并让菠菜爸爸确认（范围/口径/验收用例）",
+    "列出当前仓库问题清单（命名/文档一致性/关键流程口径）并排序（P0/P1/P2）",
+    "对 P0 问题做小步修复：先修文档与配置一致性，再修代码逻辑；每步跑 smoke"
   ],
-  "lastUpdated": "2026-02-05"
+  "risks": [
+    "当前仓库大量文档仍沿用 bet-crm-demo 的描述，可能导致需求/验收口径错位",
+    "宿主机 3001/3000 端口常被占用，需要在文档中明确 API_PORT/ADMIN_PORT 用法",
+    "优化前需要你确认‘哪些逻辑被认为不能用’（是业务口径还是功能缺失）"
+  ],
+  "lastCheck": {
+    "time": "2026-02-09T00:20:49Z",
+    "what": "smoke",
+    "result": "pass",
+    "notes": "compose up + seed:demo + smoke 全通过；默认端口 3001 冲突，改用 3011/3012"
+  }
 }

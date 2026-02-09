@@ -1,4 +1,4 @@
-# ARCHITECTURE — bet-crm-demo
+# ARCHITECTURE — crmforfun
 
 > 目标：用“平台(Admin/Finance) → 代理(两模式) → 用户”的最小 CRM demo，包含 Auth/RBAC + Postgres + Ledger（余额由账本汇总），后续接入充值/回调占位。
 
@@ -79,7 +79,7 @@
 1) Admin UI 调用 `POST /auth/login`（email/password）
 2) API 校验 DB `users.password_hash`
 3) 返回 `access_token`（JWT）
-4) Admin UI 存储 token 到 localStorage（key: `bet_crm_demo_token`）
+4) Admin UI 存储 token 到 localStorage（key: `crmforfun_token`）
 
 ### 4.2 创建代理（Admin）
 1) Admin UI `/agents` 调用 `POST /agents`
@@ -94,7 +94,7 @@
 ## 5. 目录结构（重点部分）
 
 ```
-projects/bet-crm-demo/
+projects/crmforfun/
   apps/
     api/
       src/

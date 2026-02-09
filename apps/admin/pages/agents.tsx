@@ -30,7 +30,7 @@ export default function AgentsPage() {
   const [newType, setNewType] = useState<AgentType>('Normal');
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('bet_crm_demo_token');
+    const saved = window.localStorage.getItem('crmforfun_token');
     if (saved) setToken(saved);
   }, []);
 

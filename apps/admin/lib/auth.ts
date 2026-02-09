@@ -7,7 +7,7 @@ export type MeResponse = {
   };
 };
 
-const TOKEN_KEY = 'bet_crm_demo_token';
+const TOKEN_KEY = 'crmforfun_token';
 
 export function getToken(): string {
   if (typeof window === 'undefined') return '';

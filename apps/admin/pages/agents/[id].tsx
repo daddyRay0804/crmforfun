@@ -38,7 +38,7 @@ export default function AgentDetailPage() {
   const [users, setUsers] = useState<AgentUserRecord[]>([]);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('bet_crm_demo_token');
+    const saved = window.localStorage.getItem('crmforfun_token');
     if (saved) setToken(saved);
   }, []);
 
