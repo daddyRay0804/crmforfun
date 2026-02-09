@@ -1,8 +1,48 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-http://localhost:${ADMIN_PORT:-3000}}"
-API_URL="${API_URL:-http://localhost:${API_PORT:-3001}}"
+# Allow overrides via env:
+# - BASE_URL / API_URL (highest priority)
+# - ADMIN_PORT / API_PORT
+# If not provided, try to auto-detect published ports from docker compose.
+
+autodetect_port() {
+  local svc="$1"; local container_port="$2";
+  if command -v docker >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+    :
+  fi
+  if command -v docker >/dev/null 2>&1 && command -v docker >/dev/null 2>&1; then
+    # docker compose port <service> <port>
+    if command -v docker >/dev/null 2>&1; then
+      local out
+      out=$(docker compose port "$svc" "$container_port" 2>/dev/null | head -n 1 || true)
+      # expected: 0.0.0.0:3101 or [::]:3101
+      if [[ "$out" =~ :([0-9]+)$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return 0
+      fi
+    fi
+  fi
+  return 1
+}
+
+if [[ -z "${API_URL:-}" ]]; then
+  if [[ -n "${API_PORT:-}" ]]; then
+    API_URL="http://localhost:${API_PORT}"
+  else
+    API_PORT_DETECTED=$(autodetect_port api 3001 || true)
+    API_URL="http://localhost:${API_PORT_DETECTED:-3001}"
+  fi
+fi
+
+if [[ -z "${BASE_URL:-}" ]]; then
+  if [[ -n "${ADMIN_PORT:-}" ]]; then
+    BASE_URL="http://localhost:${ADMIN_PORT}"
+  else
+    ADMIN_PORT_DETECTED=$(autodetect_port admin 3000 || true)
+    BASE_URL="http://localhost:${ADMIN_PORT_DETECTED:-3000}"
+  fi
+fi
 EMAIL="${EMAIL:-admin@example.com}"
 PASSWORD="${PASSWORD:-admin123}"
 
